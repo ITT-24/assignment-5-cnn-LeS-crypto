@@ -1,0 +1,30 @@
+[IT] = Inference Time
+[AS] = Accuracy Score
+
+default 
+    [IT] = 0.11346840858459473 sec
+    [AC] = 0.9296875
+
+rota_flip
+    [IT] = 0.11346840858459473 sec
+    [AC] = 0.71875
+
+bright
+    [IT] = 0.16101431846618652 sec
+    [AC] = 0.3515625
+
+zoom
+    [IT] = 0.151991605758667 sec
+    [AC] = 0.9296875
+
+contrast
+    [IT] = 0.14418649673461914 sec
+    [AC] = 0.9375
+
+translate
+    [IT] = 0.19055724143981934 sec
+    [AC] = 0.953125
+
+contrast & translate
+    [IT] = 0.1387939453125 sec
+    [AC] = 0.9375
