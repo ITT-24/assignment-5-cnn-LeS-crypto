@@ -1,0 +1,16 @@
+{
+    "0534147c-4548-4ab4-9a8c-f297b43e8ffb": {
+    "bboxes": [
+        ["top_left_x", "top_left_y", "width", "height"],
+        [0.38038597, 0.74085361, 0.08349486, 0.09142549],
+        [0.67322755, 0.37933984, 0.06350809, 0.09187757]
+    ],
+    "labels": [
+        "no_gesture",
+        "one"
+    ],
+    "leading_conf": 1.0,
+    "leading_hand": "left",
+    "user_id": "2e1f7cc780af954b1bc91299d5492bdddeb02986a8a9562d66dc7e940f4917f2"
+    }   
+}
