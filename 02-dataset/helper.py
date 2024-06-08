@@ -119,9 +119,14 @@ class Extractor:
                
 
     def get_normalized_bbox(self):
+        """BUG: only gets the right bounding box, when the mouseclicks go:
+           top-left, top-right, bottom-right, bottom-left. 
+           Too lazy to debug...
+        """
         print(self.clicks)
         id_tl = np.argmin(np.sum(self.clicks, axis=1)) # get top_left corner
         id_br = np.argmax(np.sum(self.clicks, axis=1)) # got bot_right corner
+
         top_left = self.clicks[id_tl]
         bot_right = self.clicks[id_br]
         print(top_left)
@@ -141,7 +146,7 @@ class Extractor:
         return [x, y, width, height]
 
     def add_annotations(self):
-        img_id = self.idx
+        img_id = self.image_list[self.idx]
         labels = []
 
         print(len(self.bboxes))
