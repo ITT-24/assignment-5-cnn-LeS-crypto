@@ -12,9 +12,7 @@
 - Annotation syntax:
   - "Bounding box annotations are proposed in COCO format with normalized relative coordinates"[1]
   - `["top_left_x", "top_left_y", "width", "height"]`
-  - modified `image-extractor.py` from last assignment to return normalized bounding box from the 4 selected points
-    - now called `helper.py`
-    - very robust and usable... (。_。)
+
 
 
 # 03 - Gesture-based Media Controls
