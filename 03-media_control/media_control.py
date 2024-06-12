@@ -5,24 +5,14 @@ from keras.src.optimizers import Adam
 import numpy as np
 from time import sleep
 
-"""
-- [ ] (2P) three hand poses are tracked and distinguished reliably
-- [x] (1P) three media control features are implemented
-- [x] (1P) mapping of gestures to media controls works and makes sense
-- [x] (1P) low latency between gesture and the system’s reaction
-"""
-
 MODEL_PATH = "gesture_recognition_3.keras"
-# LABEL_NAMES = ['dislike', 'no-gesture', 'like', 'peace', 'rock', 'stop'] # not good
-# LABEL_NAMES = ['like', 'no_gesture', 'stop'] # works good, but too little gestures
-# LABEL_NAMES = ['like', 'no_gesture', 'rock', 'stop'] # kinda works
-LABEL_NAMES = ['like', 'no_gesture', 'peace', 'stop'] # works a little better than rock
+LABEL_NAMES = ['like', 'no_gesture', 'peace', 'stop']
 
 IMG_SIZE = 64
 SIZE = (IMG_SIZE, IMG_SIZE)
 COLOR_CHANNELS = 3
 
-BBOX_THRESHOLD = 180
+BBOX_THRESHOLD = 170
 
 VOLUME_TRHESHOLD = 10 # the prevent the volume to get too loud (esp. testing)
 GESTURE_HOLD = 5 # to prevent executing actions on gesture change
@@ -31,6 +21,7 @@ COOLDOWN = 5
 WINDOW_NAME = "CONTROL"
 cap = cv2.VideoCapture(0)
 
+# ----- CLASSES -----
 
 class Model:
 
@@ -39,7 +30,6 @@ class Model:
         pass
 
     def load_model(self):
-        # NOTE: current model is kinda bad
         self.model = keras.models.load_model(MODEL_PATH, compile=False) # compile=True returns error
         # kinda like this: https://stackoverflow.com/q/62707558, https://programmerah.com/keras-nightly-import-package-error-cannot-import-name-adam-from-keras-optimizers-29815/
             # https://stackoverflow.com/q/78323015
@@ -50,7 +40,6 @@ class Model:
         """ via: assignment 04: AR-game.py
         Detect the hand and get its bbox
         """
-
         # make the contrast bigger to "wash out" lighter areas
         # see: https://docs.opencv.org/4.x/d3/dc1/tutorial_basic_linear_transform.html
         # see: https://stackoverflow.com/a/56909036
@@ -70,7 +59,6 @@ class Model:
         t_min = 40 # 0 # exclude extremes
         t_max = 255
         ret, thresh = cv2.threshold(blur, t_min, t_max, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        # ret, thresh = cv2.threshold(blur, t_min, t_max, cv2.THRESH_BINARY)
         thresh = cv2.adaptiveThreshold(thresh, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 2)
         # use adaptive threshold to then better extract the contours
         
@@ -106,7 +94,6 @@ class Model:
             hand = True
 
         output = frame
-        # cv2.drawContours(output, contours,  -1, (0, 255, 0), 2)
         cv2.imshow(WINDOW_NAME, output)
 
         return hand
@@ -128,13 +115,10 @@ class Model:
 
         return label
 
-
     def crop(self, frame):
         height, width, _ = frame.shape 
-        # frame = frame[(height//4):(height-(height//4)), (width//3):(width-(width//3))]
         frame = frame[(height//4):(height-(height//4)), (width-(width//3)):width]
         return frame
-        # cv2.imshow(WINDOW_NAME, frame)
 
     def resize(self, frame): # to fit model
         resize = cv2.resize(frame, SIZE)
@@ -142,10 +126,7 @@ class Model:
         return reshape
 
 
-
 class KeyController:
-    # VOLUME_TRHESHOLD = 5 # the prevent the volume to get too loud (esp. testing)
-    # GESTURE_HOLD = 3 # to prevent executing actions on gesture change
 
     def __init__(self):
         self.key = Controller()
@@ -158,23 +139,16 @@ class KeyController:
         self.i = 0 # to threshold volume 
         self.prev_gesture = self.no_gesture
         self.gesture_amount = 0 
-        self.is_stopped = True # prevent ambigoutiy btw. pause and play
 
 
     def parse_gesture(self, label):
         """Execute the actions corresponding to the gestures.
            With some extra checks against spam execution.
         """
-
-        # print(label)
-
         # skip executing the same gesture over and over again
         if label == self.no_gesture:
             self.prev_gesture = label # reset
             return
-        # if self.prev_gesture == label or label == self.no_gesture:
-        #     # print("[HOLD] gesture", self.prev_gesture, "==", label)
-        #     return
         elif self.prev_gesture == label:
             return
         else:
@@ -188,22 +162,18 @@ class KeyController:
                 return
 
         match label:
-            case self.dislike:
-                self.decrease_volume()
             case self.like:
                 self.increase_volume()
-            case self.rock:
-                # self.start_track()
-                self.skip_track()
             case self.stop:
-                # self.pause_track()
                 self.start_stop_track()
             case self.peace:
                 self.skip_track()
+            # case self.rock:
+            #     self.increase_volume()
             case _:
                 pass
 
-        sleep(1) # to prevent an instant new (wrong) detection
+        sleep(0.5) # to prevent an instant new (wrong) detection
 
     def start_stop_track(self):
         print("[CTRL]:\t start/stop")
@@ -221,29 +191,15 @@ class KeyController:
             self.i += 1
         pass
 
-    def decrease_volume(self): # dislike
-        print("[CTRL]:\t decrease volume")
-        if self.i > 0: 
-            self.key.press(Key.media_volume_down)
-            self.i -= 1
-        pass
-
-    # TODO: check if something is currently playing, so rock is defenetly start
-    # using pyaudio see: https://stackoverflow.com/a/70493551
-
-    # def start_track(self): # rock
-    #     if self.is_stopped:
-    #         self.key.press(Key.media_play_pause)
-    #         self.is_stopped = False
-    #     pass
-
-    # def pause_track(self): # stop
-    #     if not self.is_stopped:
-    #         self.key.press(Key.media_play_pause)
-    #         self.is_stopped = True
+    # def decrease_volume(self): # dislike
+    #     print("[CTRL]:\t decrease volume")
+    #     if self.i > 0: 
+    #         self.key.press(Key.media_volume_down)
+    #         self.i -= 1
     #     pass
 
 
+# ----- RUN ----- #
 
 if __name__ == "__main__":
 
@@ -254,15 +210,11 @@ if __name__ == "__main__":
     while(True):
         ret, frame = cap.read()
 
-        # model.detect_hand(frame)
         gesture = model.predict_gesture(frame)
         key_controller.parse_gesture(gesture)
 
-        # cv2.imshow(WINDOW_NAME, frame)
-
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    # cap.release()
 
     cap.release()
     cv2.destroyAllWindows()
