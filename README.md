@@ -14,8 +14,6 @@
   - `["top_left_x", "top_left_y", "width", "height"]`
 - prediction isn't that good
 
-
-
 # 03 - Gesture-based Media Controls
 - uses a model created in `gesture-classifier.ipynb` (based on model from notebook of [01](#01---exploring-hyperparameters))
 - uses the hand detection from the last assignment to check for hands before predicting the gesture
@@ -30,10 +28,7 @@
   - ✌️ **skip**
   - "no_gesture" resets the current detection
 
-
-not implemented:
-- 👎 = volume down
-- 🤘 = play
+not implemented: 👎,🤘 
 
 ---
 [1]: (Kapitanov, A., Kvanchiani, K., Nagaev, A., Kraynov, R., & Makhliarchuk, A. (2024). HaGRID--HAnd Gesture Recognition Image Dataset. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (pp. 4572-4581), via: https://arxiv.org/abs/2206.08219 )
