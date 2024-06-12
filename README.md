@@ -8,7 +8,7 @@
 - Visualized results in Section **Comparison**
 
 # 02 - Gathering a Dataset
-- used notebook from 01 with original model config
+- used notebook from [01](#01---exploring-hyperparameters) with original model configs
 - Annotation syntax:
   - "Bounding box annotations are proposed in COCO format with normalized relative coordinates"[1]
   - `["top_left_x", "top_left_y", "width", "height"]`
@@ -17,21 +17,18 @@
 
 
 # 03 - Gesture-based Media Controls
-- (first used the same model as [02](#02---gathering-a-dataset) so same detection issues)
-- uses a model created in `gesture-classifier.ipynb` (based on notebook from [01](#01---exploring-hyperparameters) & [02](#02---gathering-a-dataset))
-  - 
-- uses the hand detection from the last assignment to check for hands before predicting
+- uses a model created in `gesture-classifier.ipynb` (based on model from notebook of [01](#01---exploring-hyperparameters))
+- uses the hand detection from the last assignment to check for hands before predicting the gesture
 - confines the webcam frame to a small "detection window" on the left, so the user can just lift their left hand straight up
 - if hand detection doesn't work that well, a white, plain background should help
 - quit with <kbd>q</kbd>
 - requires holding the gesture for a little bit, for less ambiguity 
 - Controls:
-  - 👍 = volume up (has to be very parallel)
+  - 👍 **volume up** (has to be kinda parallel)
     - volume currently has threshold, so that it doesn't get too loud
-  - ✋ = play/pause 
-  - ✌️ = skip
+  - ✋ **play/pause** (helps when thumb is away from palm and hand is very vertical)
+  - ✌️ **skip**
   - "no_gesture" resets the current detection
-- NOTE: model cound't really differentiate between like & dislike 
 
 
 not implemented:
