@@ -12,12 +12,31 @@
 - Annotation syntax:
   - "Bounding box annotations are proposed in COCO format with normalized relative coordinates"[1]
   - `["top_left_x", "top_left_y", "width", "height"]`
+- prediction isn't that good
 
 
 
 # 03 - Gesture-based Media Controls
-...
+- (first used the same model as [02](#02---gathering-a-dataset) so same detection issues)
+- uses a model created in `gesture-classifier.ipynb` (based on notebook from [01](#01---exploring-hyperparameters) & [02](#02---gathering-a-dataset))
+  - 
+- uses the hand detection from the last assignment to check for hands before predicting
+- confines the webcam frame to a small "detection window" on the left, so the user can just lift their left hand straight up
+- if hand detection doesn't work that well, a white, plain background should help
+- quit with <kbd>q</kbd>
+- requires holding the gesture for a little bit, for less ambiguity 
+- Controls:
+  - 👍 = volume up (has to be very parallel)
+    - volume currently has threshold, so that it doesn't get too loud
+  - ✋ = play/pause 
+  - ✌️ = skip
+  - "no_gesture" resets the current detection
+- NOTE: model cound't really differentiate between like & dislike 
 
+
+not implemented:
+- 👎 = volume down
+- 🤘 = play
 
 ---
 [1]: (Kapitanov, A., Kvanchiani, K., Nagaev, A., Kraynov, R., & Makhliarchuk, A. (2024). HaGRID--HAnd Gesture Recognition Image Dataset. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (pp. 4572-4581), via: https://arxiv.org/abs/2206.08219 )

@@ -3,22 +3,30 @@ import cv2
 import keras
 from keras.src.optimizers import Adam
 import numpy as np
+from time import sleep
 
 """
-- [] (2P) three hand poses are tracked and distinguished reliably
-- [] (1P) three media control features are implemented
-- [] (1P) mapping of gestures to media controls works and makes sense
-- [] (1P) low latency between gesture and the system’s reaction
+- [ ] (2P) three hand poses are tracked and distinguished reliably
+- [x] (1P) three media control features are implemented
+- [x] (1P) mapping of gestures to media controls works and makes sense
+- [x] (1P) low latency between gesture and the system’s reaction
 """
 
-MODEL_PATH = "gesture_recognition_5.keras"
-LABEL_NAMES = ['dislike', 'no-gesture', 'like', 'peace', 'rock', 'stop']
+MODEL_PATH = "gesture_recognition_3.keras"
+# LABEL_NAMES = ['dislike', 'no-gesture', 'like', 'peace', 'rock', 'stop'] # not good
+# LABEL_NAMES = ['like', 'no_gesture', 'stop'] # works good, but too little gestures
+# LABEL_NAMES = ['like', 'no_gesture', 'rock', 'stop'] # kinda works
+LABEL_NAMES = ['like', 'no_gesture', 'peace', 'stop'] # works a little better than rock
 
 IMG_SIZE = 64
 SIZE = (IMG_SIZE, IMG_SIZE)
 COLOR_CHANNELS = 3
 
 BBOX_THRESHOLD = 180
+
+VOLUME_TRHESHOLD = 10 # the prevent the volume to get too loud (esp. testing)
+GESTURE_HOLD = 5 # to prevent executing actions on gesture change
+COOLDOWN = 5
 
 WINDOW_NAME = "CONTROL"
 cap = cv2.VideoCapture(0)
@@ -112,8 +120,11 @@ class Model:
         label = "no_gesture"
         if found_hand:
             resize = self.resize(cropped)
-            prediction = self.model.predict(resize)
-            label = LABEL_NAMES[np.argmax(prediction)]
+            prediction = self.model.predict(resize, verbose=0)
+            try:
+                label = LABEL_NAMES[np.argmax(prediction)]
+            except:
+                label = "no_gesture"
 
         return label
 
@@ -133,8 +144,8 @@ class Model:
 
 
 class KeyController:
-    VOLUME_TRHESHOLD = 5 # the prevent the volume to get too loud (esp. testing)
-    GESTURE_HOLD = 3 # to prevent executing actions on gesture change
+    # VOLUME_TRHESHOLD = 5 # the prevent the volume to get too loud (esp. testing)
+    # GESTURE_HOLD = 3 # to prevent executing actions on gesture change
 
     def __init__(self):
         self.key = Controller()
@@ -155,18 +166,25 @@ class KeyController:
            With some extra checks against spam execution.
         """
 
+        # print(label)
+
         # skip executing the same gesture over and over again
-        if self.prev_gesture == label or label == self.no_gesture:
-            # print("[HOLD] gesture", self.prev_gesture, "==", label)
+        if label == self.no_gesture:
+            self.prev_gesture = label # reset
+            return
+        # if self.prev_gesture == label or label == self.no_gesture:
+        #     # print("[HOLD] gesture", self.prev_gesture, "==", label)
+        #     return
+        elif self.prev_gesture == label:
             return
         else:
-            if self.gesture_amount == KeyController.GESTURE_HOLD:
+            if self.gesture_amount >= GESTURE_HOLD:
                 self.prev_gesture = label
                 self.gesture_amount = 0
-                print("[NEW] gesture", label)
+                print("[FOUND]:\t", label)
             else:
                 self.gesture_amount += 1
-                print("++")
+                print("...detecting...")
                 return
 
         match label:
@@ -175,41 +193,55 @@ class KeyController:
             case self.like:
                 self.increase_volume()
             case self.rock:
-                self.start_track()
+                # self.start_track()
+                self.skip_track()
             case self.stop:
-                self.pause_track()
+                # self.pause_track()
+                self.start_stop_track()
             case self.peace:
                 self.skip_track()
             case _:
                 pass
 
-    def start_track(self): # rock
-        if self.is_stopped:
-            self.key.press(Key.media_play_pause)
-            self.is_stopped = False
-        pass
+        sleep(1) # to prevent an instant new (wrong) detection
 
-    def pause_track(self): # stop
-        if not self.is_stopped:
-            self.key.press(Key.media_play_pause)
-            self.is_stopped = True
-        pass
+    def start_stop_track(self):
+        print("[CTRL]:\t start/stop")
+        self.key.press(Key.media_play_pause)
 
     def skip_track(self): # peace
+        print("[CTRL]:\t skip track")
         self.key.press(Key.media_next)
         pass
 
     def increase_volume(self): # like
-        if self.i < KeyController.VOLUME_TRHESHOLD: # so the volume doesn't get too loud accidentally
+        print("[CTRL]:\t increase volume")
+        if self.i < VOLUME_TRHESHOLD: # so the volume doesn't get too loud accidentally
             self.key.press(Key.media_volume_up)
             self.i += 1
         pass
 
     def decrease_volume(self): # dislike
+        print("[CTRL]:\t decrease volume")
         if self.i > 0: 
             self.key.press(Key.media_volume_down)
             self.i -= 1
         pass
+
+    # TODO: check if something is currently playing, so rock is defenetly start
+    # using pyaudio see: https://stackoverflow.com/a/70493551
+
+    # def start_track(self): # rock
+    #     if self.is_stopped:
+    #         self.key.press(Key.media_play_pause)
+    #         self.is_stopped = False
+    #     pass
+
+    # def pause_track(self): # stop
+    #     if not self.is_stopped:
+    #         self.key.press(Key.media_play_pause)
+    #         self.is_stopped = True
+    #     pass
 
 
 
